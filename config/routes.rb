@@ -5,6 +5,7 @@ Rails.application.routes.draw do
         collection do
           delete 'clear'
           post 'generate'
+          patch 'update_order'
         end
       end
     end
