@@ -2,7 +2,7 @@ module Api
   module V1
     class TodosController < ApplicationController
       def index
-        todos = Todo.all
+        todos = Todo.order(:order)
         render json: todos
       end
 
@@ -46,6 +46,13 @@ module Api
           Todo.create(description: letter, finished: false)
         end
         render json: todos, status: :created
+      end
+
+      def update_order
+        params[:order].each_with_index do |id, index|
+          Todo.find(id).update(order: index)
+        end
+        head :no_content
       end
 
       private
