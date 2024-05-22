@@ -1,3 +1,5 @@
+require 'json_web_token_service'
+
 class Api::V1::UsersController < ApplicationController
   def index
     @users = User.all
@@ -13,7 +15,7 @@ class Api::V1::UsersController < ApplicationController
     @user = User.new(user_params)
 
     if @user.save
-      token = encode_token({ user_id: @user.id })
+      token = JsonWebTokenService.encode(user_id: @user.id)
       render json: { user: @user, token: token, message: 'User created successfully' }, status: :created
     else
       render json: { errors: @user.errors.full_messages }, status: :unprocessable_entity
@@ -30,9 +32,5 @@ class Api::V1::UsersController < ApplicationController
 
   def user_params
     params.require(:user).permit(:name, :email, :password, :password_confirmation)
-  end
-
-  def encode_token(payload)
-    JWT.encode(payload, 'your_secret_key')
   end
 end
