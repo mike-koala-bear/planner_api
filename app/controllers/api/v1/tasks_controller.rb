@@ -4,18 +4,20 @@ module Api
   module V1
     class TasksController < ApplicationController
       before_action :set_task, only: [:show, :update, :destroy]
+      before_action :set_category, only: [:create, :update]
 
       def index
-        @tasks = current_user.tasks.order(:order)
-        render json: @tasks
+        @tasks = current_user.tasks.includes(:category).order(:order)
+        render json: @tasks, include: :category
       end
 
       def create
         @task = current_user.tasks.build(task_params)
         @task.order = current_user.tasks.maximum(:order).to_i + 1
+        @task.category = @category
 
         if @task.save
-          render json: @task, status: :created
+          render json: @task, status: :created, include: :category
         else
           render json: @task.errors, status: :unprocessable_entity
         end
@@ -23,7 +25,7 @@ module Api
 
       def update
         if @task.update(task_params)
-          render json: @task
+          render json: @task, include: :category
         else
           render json: @task.errors, status: :unprocessable_entity
         end
@@ -53,8 +55,12 @@ module Api
         @task = current_user.tasks.find(params[:id])
       end
 
+      def set_category
+        @category = current_user.categories.find_or_create_by(name: params[:category])
+      end
+
       def task_params
-        params.require(:task).permit(:order, :description, :finished)
+        params.require(:task).permit(:order, :description, :finished, :category_id)
       end
 
       def current_user

@@ -11,6 +11,7 @@ Rails.application.routes.draw do
           patch 'update_order'
         end
       end
+      resources :categories, only: [:index, :create, :destroy]
     end
   end
 end
