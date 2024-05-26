@@ -61,7 +61,7 @@ module Api
       end
 
       def task_params
-        params.require(:task).permit(:order, :description, :finished, :category_id)
+        params.require(:task).permit(:id, :order, :description, :finished, :category_id)
       end
 
       def current_user
