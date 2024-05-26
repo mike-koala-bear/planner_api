@@ -8,6 +8,7 @@ module Api
 
       def index
         @tasks = current_user.tasks.includes(:category).order(:order)
+        # @tasks = Task.includes(:category).order(:order)
         render json: @tasks, include: :category
       end
 

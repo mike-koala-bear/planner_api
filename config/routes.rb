@@ -3,7 +3,6 @@ Rails.application.routes.draw do
     namespace :v1 do
       resources :users
       post 'login', to: 'sessions#create'
-
       resources :tasks do
         collection do
           delete 'clear'
@@ -11,7 +10,16 @@ Rails.application.routes.draw do
           patch 'update_order'
         end
       end
-      resources :categories, only: [:index, :create, :destroy]
+
+      resources :categories, only: [:index, :create, :destroy] do
+        resources :tasks do
+          collection do
+            delete 'clear'
+            post 'generate'
+            patch 'update_order'
+          end
+        end
+      end
     end
   end
 end
