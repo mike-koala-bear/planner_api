@@ -34,11 +34,17 @@ module Api
 
       def update_order
         ActiveRecord::Base.transaction do
-          params[:order].each_with_index do |id, index|
-            current_user.tasks.find(id).update!(order: index)
+          params[:order].each do |container_id, tasks|
+            tasks.each do |task|
+              current_user.tasks.find(task[:id]).update!(order: task[:order], category_id: container_id)
+            end
           end
         end
         head :no_content
+      rescue ActiveRecord::RecordNotFound => e
+        render json: { error: e.message }, status: :not_found
+      rescue ActiveRecord::RecordInvalid => e
+        render json: { error: e.message }, status: :unprocessable_entity
       end
 
       def destroy
