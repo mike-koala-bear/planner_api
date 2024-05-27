@@ -27,11 +27,20 @@ module Api
         head :no_content
       end
 
+      def update_size
+        category = Category.find(params[:category_id])
+        if category.update(category_params)
+          render json: category
+        else
+          render json: category.errors, status: :unprocessable_entity
+        end
+      end
+
       private
 
       def category_params
         category_params = params.require(:category)
-        category_params.is_a?(String) ? { name: category_params } : category_params.permit(:name)
+        category_params.is_a?(String) ? { name: category_params } : category_params.permit(:name, :width, :height)
       end
 
       def current_user

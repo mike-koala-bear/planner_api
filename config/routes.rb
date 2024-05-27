@@ -11,7 +11,7 @@ Rails.application.routes.draw do
         end
       end
 
-      resources :categories, only: [:index, :create, :destroy] do
+      resources :categories do
         resources :tasks do
           collection do
             delete 'clear'
@@ -19,6 +19,7 @@ Rails.application.routes.draw do
             patch 'update_order'
           end
         end
+        patch 'update_size', to: 'categories#update_size'
       end
     end
   end
