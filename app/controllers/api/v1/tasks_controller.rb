@@ -33,17 +33,32 @@ module Api
       end
 
       def update_order
+        Rails.logger.debug "Params received: #{params.inspect}"
+
         ActiveRecord::Base.transaction do
-          params[:order].each do |container_id, tasks|
+          params.require(:order).each do |container_id, tasks|
             tasks.each do |task|
-              current_user.tasks.find(task[:id]).update!(order: task[:order], category_id: container_id)
+              task_id = task[:id].to_i
+              task_order = task[:order].to_i
+              category_id = container_id.to_i
+
+              Rails.logger.debug "Processing task ID: #{task_id}, order: #{task_order}, category ID: #{category_id}"
+
+              task_to_update = current_user.tasks.find_by(id: task_id)
+              unless task_to_update
+                raise ActiveRecord::RecordNotFound, "Task with ID #{task_id} not found for the current user"
+              end
+
+              task_to_update.update!(order: task_order, category_id: category_id)
             end
           end
         end
         head :no_content
       rescue ActiveRecord::RecordNotFound => e
+        Rails.logger.error "Record not found: #{e.message}"
         render json: { error: e.message }, status: :not_found
       rescue ActiveRecord::RecordInvalid => e
+        Rails.logger.error "Record invalid: #{e.message}"
         render json: { error: e.message }, status: :unprocessable_entity
       end
 
