@@ -5,12 +5,14 @@ module Api
     class CategoriesController < ApplicationController
       def index
         @categories = current_user.categories
+        # @categories = Category.all
         render json: @categories
       end
 
       def create
         if params.key?(:category)
           @category = current_user.categories.build(category_params)
+          # @category = Category.build(category_params.merge(user_id: User.first.id))
           if @category.save
             render json: @category, status: :created
           else
@@ -22,7 +24,7 @@ module Api
       end
 
       def destroy
-        @category = current_user.categories.find(params[:id])
+        @category = Category.find(params[:id])
         @category.destroy
         head :no_content
       end
@@ -36,11 +38,21 @@ module Api
         end
       end
 
+      def update
+        category = Category.find(params[:id])
+        if category.update(category_params)
+          render json: category
+        end
+        head :no_content
+      end
+
       private
 
       def category_params
-        category_params = params.require(:category)
-        category_params.is_a?(String) ? { name: category_params } : category_params.permit(:name, :width, :height)
+        params.require(:category).permit(:name, :width, :height)
+
+        # category_params = params.require(:category)
+        # category_params.is_a?(String) ? { name: category_params } : category_params.permit(:name, :width, :height)
       end
 
       def current_user
