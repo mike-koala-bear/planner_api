@@ -10,6 +10,7 @@ Rails.application.routes.draw do
           patch 'update_order'
         end
       end
+      resources :pages
 
       resources :categories do
         resources :tasks do

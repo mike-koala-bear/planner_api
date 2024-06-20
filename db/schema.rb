@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_06_09_141216) do
+ActiveRecord::Schema[7.1].define(version: 2024_06_18_191605) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -22,6 +22,15 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_09_141216) do
     t.integer "width"
     t.integer "height"
     t.index ["user_id"], name: "index_categories_on_user_id"
+  end
+
+  create_table "pages", force: :cascade do |t|
+    t.string "title"
+    t.text "content"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id"
+    t.index ["user_id"], name: "index_pages_on_user_id"
   end
 
   create_table "tasks", force: :cascade do |t|
@@ -45,5 +54,6 @@ ActiveRecord::Schema[7.1].define(version: 2024_06_09_141216) do
   end
 
   add_foreign_key "categories", "users"
+  add_foreign_key "pages", "users"
   add_foreign_key "tasks", "users"
 end
