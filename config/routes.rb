@@ -3,13 +3,14 @@ Rails.application.routes.draw do
     namespace :v1 do
       resources :users
       post 'login', to: 'sessions#create'
+
       resources :tasks do
         collection do
           delete 'clear'
           post 'generate'
-          patch 'update_order'
         end
       end
+
       resources :pages
 
       resources :categories do

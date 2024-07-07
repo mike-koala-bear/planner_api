@@ -7,16 +7,17 @@ module Api
       before_action :set_category, only: [:create, :update]
 
       def index
-        @tasks = current_user.tasks.includes(:category)
-        # @tasks = current_user.tasks.includes(:category).order(:order)
-        # @tasks = Task.all
+        if params[:category_id]
+          @tasks = current_user.tasks.where(category_id: params[:category_id])
+        else
+          @tasks = current_user.tasks.all
+        end
         render json: @tasks
       end
 
       def create
         @category = current_user.categories.find_or_create_by(name: params[:category])
         @task = current_user.tasks.build(task_params)
-        # @task.order = current_user.tasks.maximum(:order).to_i + 1
         @task.category = @category
 
         if @task.valid?
@@ -83,17 +84,21 @@ module Api
 
       def set_task
         @task = current_user.tasks.find(params[:id])
-        # @task = Task.find(params[:id])
       end
 
       def set_category
-        @category = current_user.categories.find_or_create_by(name: params[:category])
-        # @category = Category.find_or_create_by(name: params[:category])
-        Rails.logger.debug "Category: #{@category.inspect}"
+        if params[:category].present?
+          category_name = params[:category][:name] if params[:category].is_a?(ActionController::Parameters)
+          category_name ||= params[:category]
+
+          @category = current_user.categories.find_or_create_by(name: category_name)
+          @task.category = @category if @task
+          Rails.logger.debug "Category: #{@category.inspect}"
+        end
       end
 
       def task_params
-        params.require(:task).permit(:id, :order, :description, :finished, :category_id, :due_date)
+        params.require(:task).permit(:id, :order, :description, :finished, :category_id, :due_date, :created_at, :updated_at, :user_id, :until)
       end
 
       def current_user

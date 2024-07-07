@@ -4,9 +4,8 @@ module Api
   module V1
     class CategoriesController < ApplicationController
       def index
-        @categories = current_user.categories
-        # @categories = Category.all
-        render json: @categories
+        @categories = current_user.categories.includes(:tasks)
+        render json: @categories, include: :tasks
       end
 
       def create
