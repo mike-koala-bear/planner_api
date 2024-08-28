@@ -17,8 +17,10 @@ module Api
 
       def create
         @category = current_user.categories.find_or_create_by(name: params[:category])
-        @task = current_user.tasks.build(task_params)
+        @task = current_user.tasks.new(task_params)
         @task.category = @category
+          @task.due_date = nil if task_params[:due_date].blank?
+          @task.until = nil if task_params[:until].blank?
 
         if @task.valid?
           Rails.logger.debug "Task is valid: #{@task.inspect}"
@@ -26,7 +28,7 @@ module Api
           Rails.logger.error "Task is invalid: #{@task.errors.full_messages}"
         end
 
-        if @task.save
+        if @task.save!
           render json: @task, status: :created, include: :category
         else
           render json: @task.errors, status: :unprocessable_entity
@@ -91,14 +93,15 @@ module Api
           category_name = params[:category][:name] if params[:category].is_a?(ActionController::Parameters)
           category_name ||= params[:category]
 
-          @category = current_user.categories.find_or_create_by(name: category_name)
+          @category = current_user.categories.find_or_create_by!(name: category_name)
           @task.category = @category if @task
           Rails.logger.debug "Category: #{@category.inspect}"
         end
       end
 
       def task_params
-        params.require(:task).permit(:id, :order, :description, :finished, :category_id, :due_date, :created_at, :updated_at, :user_id, :until)
+        params.require(:task).permit(:id, :order, :description, :finished, :category_id, :due_date, :created_at, :updated_at, :user_id, :until,
+        :priority)
       end
 
       def current_user
