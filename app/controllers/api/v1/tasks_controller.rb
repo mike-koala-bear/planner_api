@@ -42,36 +42,24 @@ module Api
           render json: @task.errors, status: :unprocessable_entity
         end
       end
+  def update_order
+    category = Category.find_by(id: params[:category_id], user_id: current_user.id)
+    return render json: { error: "Category not found" }, status: :not_found unless category
 
-      def update_order
-        Rails.logger.debug "Params received: #{params.inspect}"
-
-        ActiveRecord::Base.transaction do
-          params.require(:order).each do |container_id, tasks|
-            tasks.each do |task|
-              task_id = task[:id].to_i
-              task_order = task[:order].to_i
-              category_id = container_id.to_i
-
-              Rails.logger.debug "Processing task ID: #{task_id}, order: #{task_order}, category ID: #{category_id}"
-
-              task_to_update = current_user.tasks.find_by(id: task_id)
-              unless task_to_update
-                raise ActiveRecord::RecordNotFound, "Task with ID #{task_id} not found for the current user"
-              end
-
-              task_to_update.update!(order: task_order, category_id: category_id)
-            end
-          end
-        end
-        head :no_content
-      rescue ActiveRecord::RecordNotFound => e
-        Rails.logger.error "Record not found: #{e.message}"
-        render json: { error: e.message }, status: :not_found
-      rescue ActiveRecord::RecordInvalid => e
-        Rails.logger.error "Record invalid: #{e.message}"
-        render json: { error: e.message }, status: :unprocessable_entity
+    task_order = params[:order][params[:category_id].to_s]
+    task_order.each_with_index do |task, index|
+      task_record = Task.find_by(id: task[:id])
+      if task_record
+        task_record.update!(order: index + 1)
+      else
+        render json: { error: "Task not found" }, status: :not_found and return
       end
+    end
+
+    render json: { message: 'Order updated successfully' }, status: :ok
+  end
+
+
 
       def destroy
         @task.destroy

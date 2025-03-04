@@ -45,10 +45,33 @@ module Api
         head :no_content
       end
 
+def update_sorting_mode
+  category = Category.find_by(id: params[:id])
+
+  if category.nil?
+    render json: { error: "Category not found" }, status: :not_found
+    return
+  end
+
+  # Only update sorting mode without changing task order
+  if category.update(manual_sorting: params[:manual_sorting])
+    render json: {
+      id: category.id,
+      manual_sorting: category.manual_sorting,
+      tasks: category.tasks.order(:order) # Ensure tasks keep their order
+    }, status: :ok
+  else
+    render json: { error: "Failed to update sorting mode" }, status: :unprocessable_entity
+  end
+end
+
+
+
+
       private
 
       def category_params
-        params.require(:category).permit(:name, :width, :height)
+        params.require(:category).permit(:name, :width, :height, :manual_sorting)
 
         # category_params = params.require(:category)
         # category_params.is_a?(String) ? { name: category_params } : category_params.permit(:name, :width, :height)

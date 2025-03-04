@@ -14,6 +14,9 @@ Rails.application.routes.draw do
       resources :pages
 
       resources :categories do
+        member do
+          patch 'update_sorting_mode'
+        end
         resources :tasks do
           collection do
             delete 'clear'
