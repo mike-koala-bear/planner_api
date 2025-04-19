@@ -42,24 +42,23 @@ module Api
           render json: @task.errors, status: :unprocessable_entity
         end
       end
-  def update_order
-    category = Category.find_by(id: params[:category_id], user_id: current_user.id)
-    return render json: { error: "Category not found" }, status: :not_found unless category
 
-    task_order = params[:order][params[:category_id].to_s]
-    task_order.each_with_index do |task, index|
-      task_record = Task.find_by(id: task[:id])
-      if task_record
-        task_record.update!(order: index + 1)
-      else
-        render json: { error: "Task not found" }, status: :not_found and return
+      def update_order
+        category = Category.find_by(id: params[:category_id], user_id: current_user.id)
+        return render json: { error: "Category not found" }, status: :not_found unless category
+
+        task_order = params[:tasks]
+        task_order.each do |task_data|
+          task_record = Task.find_by(id: task_data[:id])
+          if task_record
+            task_record.update!(order: task_data[:order])
+          else
+            render json: { error: "Task not found" }, status: :not_found and return
+          end
+        end
+
+        render json: { message: 'Order updated successfully' }, status: :ok
       end
-    end
-
-    render json: { message: 'Order updated successfully' }, status: :ok
-  end
-
-
 
       def destroy
         @task.destroy
